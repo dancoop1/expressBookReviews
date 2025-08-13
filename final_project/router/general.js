@@ -4,19 +4,36 @@ let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
+// Check if a user with the given username already exists
+const doesExist = (username) => {
+    // Filter the users array for any user with the same username
+    let userswithsamename = users.filter((user) => {
+        return user.username === username;
+    });
+    // Return true if any user with the same username is found, otherwise false
+    if (userswithsamename.length > 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
 
 public_users.post("/register", (req,res) => {
-    // Check if book is provided in the request body
-    if (req.body.email) {
-        // Create or update friend's details based on provided email
-        friends[req.body.email] = {
-            "firstName": req.body.firstName,
-            "lastName": req.body.lastName,
-            "DOB": req.body.DOB
-        };
+    const username = req.params.username;
+    const password = req.params.password;
+    
+    // Check if the username is provided in the request body
+    if (username && password) {
+        // Check if username already exists
+        if (!doesExist(username)) {
+            users.push({"username": username, "password": password});
+            return res.status(200).json({message: "User successfully registered. Now you can login"});
+        } else {
+            return res.status(404).json({message: "User already exists!"});
+        }
     }
-    // Send response indicating user addition
-    res.send("The user" + (' ') + (req.body.firstName) + " Has been added!");
+    // Return error if username or password is missing
+    return res.status(404).json({message: "Username or password missing."});
 });
 
 // Get the book list available in the shop
