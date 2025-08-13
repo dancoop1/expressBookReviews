@@ -92,28 +92,26 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
     const isbn = req.params.isbn;
     const username = req.session.authorization?.username; 
 
-    // Respond if book with specified isbn is not found
-    if (!books[isbn]) {
-        return res.status(404).json({message: "Unable to find book!"});
-    }
-
     // Input validation
     if (!isbn){
         return res.status(400).json({ 
             message: "ISBN is required." 
         });
     }
-    
-    // Check if review exists for book
-    if (!books[isbn].review) {
-        return res.status(404).json({message: "No reviews for this book!"});
+
+    // Check if book exists
+    if (!books[isbn]) {
+        return res.status(404).json({message: "Unable to find book!"});
     }
 
-    // Respond if not logged in
+    // Check if not logged in
     if (!username) {
         return res.status(403).json({message: "Must be logged in to delete review"});
     }
     
+    // Initialize reviews if they don't exist
+    books[isbn].reviews = books[isbn].reviews || {};
+
     // Check if user has a review for this book
     if (!books[isbn].reviews[username]) {
         return res.status(404).json({message: "You have no review for this book!"});
